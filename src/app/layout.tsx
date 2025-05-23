@@ -36,7 +36,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark select-none">
       <body className={`${jakarta.className} antialiased`}>
         <DisableContextMenu />
         {children}
