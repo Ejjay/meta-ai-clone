@@ -8,10 +8,19 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
 })
 
-const nextConfig: NextConfig = {
+// Define the header type explicitly
+type HeaderConfig = {
+  source: string;
+  headers: Array<{
+    key: string;
+    value: string;
+  }>;
+}
+
+const nextConfig = {
   experimental: {
     serverActions: {
-      allowedOrigins: ["*"] 
+      allowedOrigins: ["*"]
     }
   },
   
@@ -23,8 +32,8 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Headers for API security
-  async headers() {
+  // Type the headers function explicitly
+  async headers(): Promise<HeaderConfig[]> {
     return [
       {
         source: '/api/:path*',
@@ -47,6 +56,7 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     return config
   },
-}
+} satisfies NextConfig
 
-export default withPWA(nextConfig)
+// Cast the config to avoid type conflicts
+export default withPWA(nextConfig as NextConfig)

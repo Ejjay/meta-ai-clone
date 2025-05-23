@@ -18,27 +18,29 @@ export const useAutosizeTextArea = ({
 }: UseAutosizeTextAreaProps) => {
   const [init, setInit] = React.useState(true);
   React.useEffect(() => {
-  const offsetBorder = 6;
-  const textAreaElement = textAreaRef.current;
+  const currentTextArea = textAreaRef.current;
   
-  if (textAreaElement) {
-    if (init) {
-      textAreaElement.style.minHeight = `${minHeight + offsetBorder}px`;
-      if (maxHeight > minHeight) {
-        textAreaElement.style.maxHeight = `${maxHeight}px`;
-      }
-      setInit(false);
+  if (!currentTextArea) return;
+
+  const offsetBorder = 6;
+  
+  if (init) {
+    currentTextArea.style.minHeight = `${minHeight + offsetBorder}px`;
+    if (maxHeight > minHeight) {
+      currentTextArea.style.maxHeight = `${maxHeight}px`;
     }
-    textAreaElement.style.height = `${minHeight + offsetBorder}px`;
-    const scrollHeight = textAreaElement.scrollHeight;
-    
-    if (scrollHeight > maxHeight) {
-      textAreaElement.style.height = `${maxHeight}px`;
-    } else {
-      textAreaElement.style.height = `${scrollHeight + offsetBorder}px`;
-    }
+    setInit(false);
   }
-}, [init, maxHeight, minHeight, triggerAutoSize]); 
+  
+  currentTextArea.style.height = `${minHeight + offsetBorder}px`;
+  const scrollHeight = currentTextArea.scrollHeight;
+  
+  if (scrollHeight > maxHeight) {
+    currentTextArea.style.height = `${maxHeight}px`;
+  } else {
+    currentTextArea.style.height = `${scrollHeight + offsetBorder}px`;
+  }
+}, [init, maxHeight, minHeight, triggerAutoSize, textAreaRef]);
 };
 
 export type AutosizeTextAreaRef = {
