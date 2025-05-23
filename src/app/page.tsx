@@ -59,15 +59,15 @@ export default function Chat() {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-  if (recording) {
-    startRecording();
-  } else {
-    stopRecording();
-  }
-  return () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-  };
-}, [recording, startRecording]); 
+    if (recording) {
+      startRecording();
+    } else {
+      stopRecording();
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [recording, startRecording, stopRecording]);
 
   useEffect(() => {
     messageContainerRef.current?.scrollTo({
@@ -77,54 +77,48 @@ export default function Chat() {
   }, [messages]);
 
 const startRecording = useCallback(async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorderRef.current = new MediaRecorder(stream);
-    mediaRecorderRef.current.addEventListener(
-      "dataavailable",
-      handleDataAvailable
-    );
-    mediaRecorderRef.current.addEventListener("stop", handleStop);
-    mediaRecorderRef.current.start();
-    setRecordingTime(0);
-    timerRef.current = setInterval(() => {
-      setRecordingTime((prevTime) => {
-        if (prevTime >= 30) {
-          stopRecording();
-          return 30;
-        }
-        return prevTime + 1;
-      });
-    }, 1000);
-    audioChunks.current = [];
-  } catch (error) {
-    console.error("Error accessing microphone:", error);
-  }
-}, [stopRecording, handleDataAvailable, handleStop]);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      mediaRecorderRef.current.addEventListener("dataavailable", handleDataAvailable);
+      mediaRecorderRef.current.addEventListener("stop", handleStop);
+      mediaRecorderRef.current.start();
+      setRecordingTime(0);
+      timerRef.current = setInterval(() => {
+        setRecordingTime((prevTime) => {
+          if (prevTime >= 30) {
+            stopRecording();
+            return 30;
+          }
+          return prevTime + 1;
+        });
+      }, 1000);
+      audioChunks.current = [];
+    } catch (error) {
+      console.error("Error accessing microphone:", error);
+    }
+  }, [handleDataAvailable, handleStop, stopRecording]);
 
-  const stopRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state === "recording"
-    ) {
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop();
       setRecording(false);
       if (timerRef.current) clearInterval(timerRef.current);
     }
-  };
+  }, []);
 
-  const handleDataAvailable = (event: BlobEvent) => {
+  const handleDataAvailable = useCallback((event: BlobEvent) => {
     if (event.data.size > 0) {
       audioChunks.current.push(event.data);
     }
-  };
+  }, []);
 
-  const handleStop = () => {
+  const handleStop = useCallback(() => {
     if (audioChunks.current.length > 0) {
       const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
       setAudioBlob(audioBlob);
     }
-  };
+  }, []);
 
   const handleVoiceSubmit = async () => {
     if (!audioBlob) return;
