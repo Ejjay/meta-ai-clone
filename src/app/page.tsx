@@ -37,7 +37,7 @@ export default function Chat() {
     async onToolCall({ toolCall }) {
       if (toolCall.toolName === "generateAIImage") {
         const { imgprompt } = toolCall.args as { imgprompt: string };
-       
+
         const res = await fetch(
           "https://ai-image-api.xeven.workers.dev/img?model=flux-schnell&prompt=" +
             imgprompt
@@ -57,7 +57,28 @@ export default function Chat() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioChunks = useRef<Blob[]>([]);
   const messageContainerRef = useRef<HTMLDivElement>(null);
-  
+
+  const handleDataAvailable = useCallback((event: BlobEvent) => {
+    if (event.data.size > 0) {
+      audioChunks.current.push(event.data);
+    }
+  }, []);
+
+  const handleStop = useCallback(() => {
+    if (audioChunks.current.length > 0) {
+      const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
+      setAudioBlob(audioBlob);
+    }
+  }, []);
+
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop();
+      setRecording(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+  }, []);
+
   const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -81,14 +102,6 @@ export default function Chat() {
     }
   }, [handleDataAvailable, handleStop, stopRecording]);
 
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
-      mediaRecorderRef.current.stop();
-      setRecording(false);
-      if (timerRef.current) clearInterval(timerRef.current);
-    }
-  }, []);
-
   useEffect(() => {
     if (recording) {
       startRecording();
@@ -106,19 +119,6 @@ export default function Chat() {
       behavior: "smooth",
     });
   }, [messages]);
-
-  const handleDataAvailable = useCallback((event: BlobEvent) => {
-    if (event.data.size > 0) {
-      audioChunks.current.push(event.data);
-    }
-  }, []);
-
-  const handleStop = useCallback(() => {
-    if (audioChunks.current.length > 0) {
-      const audioBlob = new Blob(audioChunks.current, { type: "audio/wav" });
-      setAudioBlob(audioBlob);
-    }
-  }, []);
 
   const handleVoiceSubmit = async () => {
     if (!audioBlob) return;
