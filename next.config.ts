@@ -10,9 +10,7 @@ const withPWA = withPWAInit({
 
 const nextConfig = {
   experimental: {
-    serverActions: {
-      enabled: true
-    }
+    serverActions: true
   },
   
   images: {
