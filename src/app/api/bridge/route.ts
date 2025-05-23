@@ -1,8 +1,8 @@
 import { google } from "@ai-sdk/google";
-import { CoreMessage, streamText } from "ai";
+import { streamText } from "ai"; 
 
 export async function POST(req: Request) {
-  const { query, context } = await req.json();
+  const { query } = await req.json(); 
 
   try {
     const result = await streamText({

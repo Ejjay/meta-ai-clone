@@ -9,9 +9,10 @@ const withPWA = withPWAInit({
 })
 
 const nextConfig: NextConfig = {
-  // Enable experimental features
   experimental: {
-    serverActions: true,
+    serverActions: {
+      allowedOrigins: ["*"] 
+    }
   },
   
   images: {

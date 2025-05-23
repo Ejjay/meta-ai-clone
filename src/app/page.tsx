@@ -59,15 +59,15 @@ export default function Chat() {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
-    if (recording) {
-      startRecording();
-    } else {
-      stopRecording();
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [recording]);
+  if (recording) {
+    startRecording();
+  } else {
+    stopRecording();
+  }
+  return () => {
+    if (timerRef.current) clearInterval(timerRef.current);
+  };
+}, [recording, startRecording]); 
 
   useEffect(() => {
     messageContainerRef.current?.scrollTo({
