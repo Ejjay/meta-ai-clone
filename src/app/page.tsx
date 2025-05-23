@@ -7,7 +7,7 @@ import remarkGfm from "remark-gfm";
 import { Play, Pause, X, PlusCircle, SendHorizonal, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Markdown from "react-markdown";
 import {
@@ -58,25 +58,7 @@ export default function Chat() {
   const audioChunks = useRef<Blob[]>([]);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   
-  useEffect(() => {
-    if (recording) {
-      startRecording();
-    } else {
-      stopRecording();
-    }
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, [recording, startRecording, stopRecording]);
-
-  useEffect(() => {
-    messageContainerRef.current?.scrollTo({
-      top: messageContainerRef.current.scrollHeight,
-      behavior: "smooth",
-    });
-  }, [messages]);
-
-const startRecording = useCallback(async () => {
+  const startRecording = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -107,6 +89,24 @@ const startRecording = useCallback(async () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (recording) {
+      startRecording();
+    } else {
+      stopRecording();
+    }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [recording, startRecording, stopRecording]);
+
+  useEffect(() => {
+    messageContainerRef.current?.scrollTo({
+      top: messageContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [messages]);
+
   const handleDataAvailable = useCallback((event: BlobEvent) => {
     if (event.data.size > 0) {
       audioChunks.current.push(event.data);
@@ -123,11 +123,9 @@ const startRecording = useCallback(async () => {
   const handleVoiceSubmit = async () => {
     if (!audioBlob) return;
 
-    // Dummy API call for voice processing
     const dummyTranscription =
       "This is a dummy transcription of the voice message.";
 
-    // Append user's voice message
     const userMessage: Message = {
       role: "user",
       content: "[Voice Message]",
@@ -135,10 +133,8 @@ const startRecording = useCallback(async () => {
     };
     append(userMessage);
 
-    // Simulate API delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Append AI's response to transcription
     const aiMessage: Message = {
       role: "assistant",
       content: `I received a voice message. Here's what I understood: "${dummyTranscription}"`,
@@ -146,10 +142,9 @@ const startRecording = useCallback(async () => {
     };
     append(aiMessage);
 
-    // Reset audio blob and recording time
     setAudioBlob(null);
     setRecordingTime(0);
-    audioChunks.current = []; // Reset audio chunks
+    audioChunks.current = [];
   };
 
   const togglePlayPause = () => {
@@ -177,7 +172,6 @@ const startRecording = useCallback(async () => {
         alt="whatsapp background"
         className="absolute inset-0 -z-10 border object-cover size-full opacity-15"
       />
-      {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -228,7 +222,6 @@ const startRecording = useCallback(async () => {
         </Button>
       </motion.header>
 
-      {/* Messages */}
       <div
         className="flex-1 overflow-y-auto p-4 space-y-4"
         ref={messageContainerRef}
@@ -458,7 +451,6 @@ const startRecording = useCallback(async () => {
         )}
       </div>
 
-      {/* Recording animation */}
       <AnimatePresence>
         {recording && (
           <motion.div
@@ -478,7 +470,6 @@ const startRecording = useCallback(async () => {
         )}
       </AnimatePresence>
 
-      {/* Voice message preview */}
       <AnimatePresence>
         {audioBlob && !recording && (
           <motion.div
@@ -518,7 +509,6 @@ const startRecording = useCallback(async () => {
         )}
       </AnimatePresence>
 
-      {/* Input */}
       <motion.form
         onSubmit={handleSubmit}
         initial={{ opacity: 0, y: 20 }}
