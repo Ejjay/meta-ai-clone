@@ -10,9 +10,7 @@ const withPWA = withPWAInit({
 
 const nextConfig = {
   experimental: {
-    serverActions: {
-      allowedOrigins: ["*"]
-    }
+    serverActions: true
   },
   
   images: {
@@ -44,5 +42,4 @@ const nextConfig = {
   },
 }
 
-// Export without type assertion
 export default withPWA(nextConfig)
